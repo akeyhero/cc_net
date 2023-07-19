@@ -26,9 +26,9 @@ setup(
     },
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.9",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     install_requires=[
         "beautifulsoup4>=4.7.1",
         "boto3>=1.28.2",
