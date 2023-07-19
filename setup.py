@@ -31,6 +31,7 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "beautifulsoup4>=4.7.1",
+        "boto3>=1.28.2",
         "pandas>=0.23.4",
         "requests>=2.22.0",
         "fasttext>=0.9.1",

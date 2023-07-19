@@ -937,7 +937,7 @@ def open_read(filename: ReadableFileLike) -> Iterable[str]:
             return _yield_from(filename)
         filename = tp.cast(Path, filename[0])
     if isinstance(filename, str):
-        if filename.startswith("http://") or filename.startswith("https://"):
+        if '://' in filename:
             return open_remote_file(filename)
 
         filename = Path(filename)
@@ -1118,10 +1118,22 @@ def open_remote_file(url: str, cache: Path = None) -> Iterable[str]:
     if cache and cache.exists():
         return open_read(cache)
 
-    # TODO: open the remote file in streaming mode.
-    # The hard part is that we need to write the content on disk at the same time,
-    # to implement disk caching.
-    raw_bytes = request_get_content(url)
+    if url.startswith('http://') or url.startswith('https://'):
+        # TODO: open the remote file in streaming mode.
+        # The hard part is that we need to write the content on disk at the same time,
+        # to implement disk caching.
+        raw_bytes = request_get_content(url)
+    elif url.startswith('s3://'):
+        import boto3
+        s3_client = boto3.client('s3')
+        _, _, bucket, key = url.split('/', 3)
+        with tempfile.TemporaryFile(mode='w+b') as f:
+            s3_client.download_fileobj(bucket, key, f)
+            f.flush()
+            f.seek(0)
+            raw_bytes = f.read()
+    else:
+        raise Exception(f"Unsupported url: {url}")
     content = io.BytesIO(raw_bytes)
     if url.endswith(".gz"):
         f: TextIO = gzip.open(content, mode="rt")  # type: ignore
